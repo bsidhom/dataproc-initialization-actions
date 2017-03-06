@@ -43,6 +43,20 @@ readonly FLINK_TASKMANAGER_MEMORY_FRACTION='1.0'
 # Set this to true to start a flink yarn session at initialization time.
 readonly START_FLINK_YARN_SESSION="true"
 
+function install_flink() {
+  readonly local url='http://www-us.apache.org/dist/flink/flink-1.2.0/flink-1.2.0-bin-hadoop27-scala_2.11.tgz'
+  readonly local tarball='flink-1.2.0-bin-hadoop27-scala_2.11.tgz'
+  readonly local extract_dir='flink-1.2.0'
+  mkdir -p "${FLINK_INSTALL_DIR}"
+  pushd "${FLINK_INSTALL_DIR}"
+  wget "${url}"
+  tar -xvf "${tarball}"
+  mv "${extract_dir}"/* .
+  rmdir "${extract_dir}"
+  rm "${tarball}"
+  popd
+}
+
 function configure_flink() {
   # Number of worker nodes in your cluster
   local num_workers=$(/usr/share/google/get_metadata_value attributes/dataproc-worker-count)
@@ -105,7 +119,7 @@ EOF
 function main() {
 local role="$(/usr/share/google/get_metadata_value attributes/dataproc-role)"
 if [[ "${role}" == 'Master' ]]; then
-  apt-get install -y flink
+  install_flink
   configure_flink
 fi
 }
